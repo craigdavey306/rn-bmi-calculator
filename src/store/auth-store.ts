@@ -5,7 +5,7 @@ const initialState: RootState = {
   authenticated: false,
 };
 
-const authSlice = createSlice({
+export const authSlice = createSlice({
   name: 'bmi-calc-auth',
   initialState,
   reducers: {

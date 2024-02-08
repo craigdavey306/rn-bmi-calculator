@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 import { Colors, Font } from '../../library';
+import { slugifyString } from '../../utils/slugify';
+import { getTestId } from '../../utils/helpers';
 
 type AutoComplete = TextInputProps['autoComplete'];
 
@@ -47,7 +49,7 @@ const Input: React.FC<InputProps> = ({
   maxLength,
   secureTextEntry,
 }): JSX.Element => {
-  const slugifiedLabel = label.replace(' ', '-');
+  const slugifiedLabel = slugifyString(label, ' ', '-');
 
   return (
     <View style={styles.container}>
@@ -58,8 +60,9 @@ const Input: React.FC<InputProps> = ({
         {label}
       </Text>
       <TextInput
+        accessible={true}
         accessibilityLabelledBy={slugifiedLabel}
-        accessibilityRole="none"
+        accessibilityLabel={label}
         autoCapitalize="none"
         autoComplete={autoComplete}
         keyboardType={keyboardType}
@@ -67,7 +70,7 @@ const Input: React.FC<InputProps> = ({
         onChangeText={handleChangeInputValue}
         secureTextEntry={secureTextEntry}
         style={[styles.input]}
-        testID={`${slugifiedLabel}:input`}
+        testID={getTestId(slugifiedLabel)}
         value={inputValue}
       />
     </View>

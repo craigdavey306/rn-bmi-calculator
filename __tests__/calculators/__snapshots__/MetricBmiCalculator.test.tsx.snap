@@ -1,0 +1,144 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Renders the English BMI Calculator correctly 1`] = `
+<View>
+  <View
+    style={
+      {
+        "padding": 10,
+      }
+    }
+  >
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#234e27",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "margin": 5,
+          "textAlign": "center",
+        }
+      }
+    >
+      Height
+    </Text>
+    <View
+      style={
+        {
+          "marginVertical": 8,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="text"
+        nativeID="centimeters"
+        style={
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "marginBottom": 4,
+            "marginLeft": 3,
+          }
+        }
+      >
+        Centimeters
+      </Text>
+      <TextInput
+        accessibilityLabelledBy="centimeters"
+        accessibilityRole="none"
+        accessible={true}
+        autoCapitalize="none"
+        keyboardType="number-pad"
+        onChangeText={[Function]}
+        style={
+          [
+            {
+              "backgroundColor": "#dfeedf",
+              "borderColor": "#000000",
+              "borderRadius": 4,
+              "borderStyle": "solid",
+              "borderWidth": 1,
+              "color": "#000000",
+              "fontSize": 13,
+              "paddingHorizontal": 6,
+              "paddingVertical": 8,
+            },
+          ]
+        }
+        testID="centimeters:testid"
+        value=""
+      />
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "padding": 10,
+      }
+    }
+  >
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#234e27",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "margin": 5,
+          "textAlign": "center",
+        }
+      }
+    >
+      Weight
+    </Text>
+    <View
+      style={
+        {
+          "marginVertical": 8,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="text"
+        nativeID="kilograms"
+        style={
+          {
+            "color": "#000000",
+            "fontSize": 13,
+            "marginBottom": 4,
+            "marginLeft": 3,
+          }
+        }
+      >
+        Kilograms
+      </Text>
+      <TextInput
+        accessibilityLabelledBy="kilograms"
+        accessibilityRole="none"
+        accessible={true}
+        autoCapitalize="none"
+        keyboardType="numeric"
+        onChangeText={[Function]}
+        style={
+          [
+            {
+              "backgroundColor": "#dfeedf",
+              "borderColor": "#000000",
+              "borderRadius": 4,
+              "borderStyle": "solid",
+              "borderWidth": 1,
+              "color": "#000000",
+              "fontSize": 13,
+              "paddingHorizontal": 6,
+              "paddingVertical": 8,
+            },
+          ]
+        }
+        testID="kilograms:testid"
+        value=""
+      />
+    </View>
+  </View>
+</View>
+`;

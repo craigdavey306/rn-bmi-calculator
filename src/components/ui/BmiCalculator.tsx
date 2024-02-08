@@ -1,107 +1,268 @@
-import React, { LegacyRef, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
-import HeightInput from './HeightInput';
-import WeightInput from './WeightInput';
 import BmiResult from './BmiResult';
 import TextButton from './TextButton';
+import EnglishBmiCalculator from '../calculators/EnglishBmiCalculator';
+import MetricBmiCalculator from '../calculators/MetricBmiCalculator';
 
 import { Colors, Font } from '../../library';
-import { FOOT_RANGE, INCH_RANGE, WEIGHT_RANGE } from '../../constants';
+import {
+  FOOT_RANGE,
+  INCH_RANGE,
+  WEIGHT_RANGE,
+  ENGLISH_BMI_MULTIPLIER,
+  METRIC_BMI_MULTIPLIER,
+} from '../../constants';
 
-const BmiCalculator = () => {
-  const [heightFeetString, setHeightFeetString] = useState('');
-  const [heightInchesString, setHeightInchesString] = useState('');
-  const [weightString, setWeightString] = useState('');
-  const [bmi, setBMI] = useState('');
-  const [bmiCalculated, setbmiCalculated] = useState(false);
+import { getTestId } from '../../utils/helpers';
 
-  const handleHeightFeetInput = (heightInFeet: string) => {
-    setBMI('');
-    setHeightFeetString(heightInFeet);
-  };
+type CalculatorUnit = 'metric' | 'english';
 
-  const handleHeightInchesInput = (heightInInches: string) => {
-    setBMI('');
-    setHeightInchesString(heightInInches);
-  };
+interface Calculator {
+  unit: CalculatorUnit;
+  calculatedBmi: number;
+  bmiPrecision: number;
+}
 
-  const handleWeightInput = (weightInput: string) => {
-    setBMI('');
-    setWeightString(weightInput);
-  };
+export interface MetricCalculator extends Calculator {
+  unit: 'metric';
+  heightCentimeters: string;
+  weightKilograms: string;
+  calculate: (height: string, weight: string) => void;
+}
 
-  const isValidInput = (input: number, range: typeof FOOT_RANGE) => {
+export interface EnglishCalculator extends Calculator {
+  unit: 'english';
+  heightFeet: string;
+  heightInches: string;
+  weightPounds: string;
+  calculate: (heightFeet: string, heightInches: string, weight: string) => void;
+}
+
+const BmiCalculator = (): JSX.Element => {
+  const [isEnglishUnit, setIsEnglisUnit] = useState(true);
+  const mode = isEnglishUnit ? 'english' : 'metric';
+  const [isCalculated, setIsCalculated] = useState(false);
+  const [calcState, setCalcState] = useState<
+    EnglishCalculator | MetricCalculator
+  >(getInitialState(mode));
+
+  function isValidEnglishInput(input: number, range: typeof FOOT_RANGE) {
     return input >= range.minimum && input <= range.maximum;
-  };
+  }
 
-  const resetCalculator = () => {
-    setBMI('');
-    setHeightFeetString('');
-    setHeightInchesString('');
-    setWeightString('');
-    setbmiCalculated(false);
-  };
+  function calculateBmi(
+    height: number,
+    weight: number,
+    multiplier: number = 1,
+  ) {
+    return (weight / Math.pow(height, 2)) * multiplier;
+  }
 
-  const calculateBmi = () => {
-    if (!heightFeetString || !heightInchesString || !weightString) {
-      Alert.alert('All input values are required.');
-      return;
+  function calculateEnglishBmi(
+    heightFeetString: string,
+    heightInchesString: string,
+    weightPoundsString: string,
+  ): void {
+    if (!heightFeetString || !heightInchesString || !weightPoundsString) {
+      throw new Error('All input values are required.');
     }
 
-    const feet = Number(heightFeetString);
-    const inches = Number(heightInchesString);
-    const weight = Number(weightString);
-
-    if (!isValidInput(feet, FOOT_RANGE)) {
-      Alert.alert(
+    const heightFeet = heightFeetString ? parseInt(heightFeetString) : 0;
+    if (!isValidEnglishInput(heightFeet, FOOT_RANGE)) {
+      throw new Error(
         `Feet must be between ${FOOT_RANGE.minimum} and ${FOOT_RANGE.maximum}.`,
       );
-      return;
     }
 
-    if (!isValidInput(inches, INCH_RANGE)) {
-      Alert.alert(
+    const heightInches = heightInchesString ? parseInt(heightInchesString) : 0;
+    if (!isValidEnglishInput(heightInches, INCH_RANGE)) {
+      throw new Error(
         `Inches must be between ${INCH_RANGE.minimum} and ${INCH_RANGE.maximum}.`,
       );
-      return;
     }
 
-    if (!isValidInput(weight, WEIGHT_RANGE)) {
-      Alert.alert(`Weight must be greate than ${WEIGHT_RANGE.minimum}.`);
-      return;
+    const weight = weightPoundsString ? parseInt(weightPoundsString) : 0;
+    if (!isValidEnglishInput(weight, WEIGHT_RANGE)) {
+      throw new Error(`Weight must be greater than ${WEIGHT_RANGE.minimum}.`);
     }
 
-    const height = feet * 12 + inches;
-    const calculatedBMI = (weight / Math.pow(height, 2)) * 703;
+    const height = heightFeet * 12 + heightInches;
+    const calculatedBmi = calculateBmi(height, weight, ENGLISH_BMI_MULTIPLIER);
+    setCalcState({ ...calcState, calculatedBmi });
+  }
 
-    setBMI(calculatedBMI.toFixed(1));
-    setbmiCalculated(true);
-  };
+  function calculateMetricBmi(
+    heightCentimeters: string,
+    weightKilograms: string,
+  ): void {
+    const height = heightCentimeters ? parseFloat(heightCentimeters) : 0;
+    const weight = weightKilograms ? parseFloat(weightKilograms) : 0;
+    const calculatedBmi = calculateBmi(height, weight, METRIC_BMI_MULTIPLIER);
 
-  const button = !bmiCalculated ? (
-    <TextButton buttonText="Calculate BMI" onPress={calculateBmi} />
+    setCalcState({ ...calcState, calculatedBmi });
+  }
+
+  function getInitialState(
+    unit: CalculatorUnit,
+  ): MetricCalculator | EnglishCalculator {
+    switch (unit) {
+      case 'english':
+        return {
+          unit,
+          heightFeet: '',
+          heightInches: '',
+          weightPounds: '',
+          calculatedBmi: 0,
+          bmiPrecision: 1,
+          calculate: calculateEnglishBmi,
+        };
+
+      case 'metric':
+        return {
+          unit,
+          heightCentimeters: '',
+          weightKilograms: '',
+          calculatedBmi: 0,
+          bmiPrecision: 1,
+          calculate: calculateMetricBmi,
+        };
+    }
+  }
+
+  function handleHeightFeetInput(
+    calc: EnglishCalculator,
+    heightFeet: string,
+  ): void {
+    setCalcState({ ...calc, heightFeet });
+  }
+
+  function handleHeightInchesInput(
+    calc: EnglishCalculator,
+    heightInches: string,
+  ): void {
+    setCalcState({ ...calc, heightInches });
+  }
+
+  function handleWeightPounds(calc: EnglishCalculator, weightPounds: string) {
+    setCalcState({ ...calc, weightPounds });
+  }
+
+  function handleWeightKilograms(
+    calc: MetricCalculator,
+    weightKilograms: string,
+  ) {
+    setCalcState({ ...calc, weightKilograms });
+  }
+
+  function handleHeightCentimeters(
+    calc: MetricCalculator,
+    heightCentimeters: string,
+  ) {
+    setCalcState({ ...calc, heightCentimeters });
+  }
+
+  function handleCalculateBmiBtnPress() {
+    if (calcState.unit === 'english') {
+      try {
+        calculateEnglishBmi(
+          calcState.heightFeet,
+          calcState.heightInches,
+          calcState.weightPounds,
+        );
+        setIsCalculated(true);
+      } catch (error) {
+        if (error instanceof Error) {
+          Alert.alert(error.message);
+        }
+      }
+    } else {
+      calculateMetricBmi(
+        calcState.heightCentimeters,
+        calcState.weightKilograms,
+      );
+      setIsCalculated(true);
+    }
+  }
+
+  function resetCalculator() {
+    setCalcState(getInitialState(mode));
+    setIsCalculated(false);
+  }
+
+  const button = !isCalculated ? (
+    <TextButton
+      buttonText="Calculate BMI"
+      onPress={handleCalculateBmiBtnPress}
+    />
   ) : (
     <TextButton buttonText="Reset" onPress={resetCalculator} />
   );
 
+  function renderCalculatorInputs(): JSX.Element {
+    return calcState.unit === 'english' ? (
+      <EnglishBmiCalculator
+        heightFeet={calcState.heightFeet}
+        heightInches={calcState.heightInches}
+        weightPounds={calcState.weightPounds}
+        handleHeightFeetInput={(heightFeet: string) =>
+          handleHeightFeetInput(calcState, heightFeet)
+        }
+        handleHeightInchesInput={(heightInches: string) =>
+          handleHeightInchesInput(calcState, heightInches)
+        }
+        handleWeightPoundsInput={(weightPounds: string) =>
+          handleWeightPounds(calcState, weightPounds)
+        }
+      />
+    ) : (
+      <MetricBmiCalculator
+        heightCentimeters={calcState.heightCentimeters}
+        weightKilograms={calcState.weightKilograms}
+        handleHeightInput={(heightCentimeters: string) =>
+          handleHeightCentimeters(calcState, heightCentimeters)
+        }
+        handleWeightInput={(weightKilograms: string) =>
+          handleWeightKilograms(calcState, weightKilograms)
+        }
+      />
+    );
+  }
+
+  useEffect(() => {
+    resetCalculator();
+  }, [mode]);
+
   return (
     <View style={styles.container}>
-      <Text accessibilityRole="text" style={styles.label}>
+      <Text style={styles.label} testID={getTestId('bmi-calculator-label')}>
         BMI Calculator
       </Text>
-      <HeightInput
-        handleFeetInput={handleHeightFeetInput}
-        handleInchesInput={handleHeightInchesInput}
-        heightInFeet={heightFeetString}
-        heightInInches={heightInchesString}
-      />
-      <WeightInput
-        handleWeightInput={handleWeightInput}
-        weightInPounds={weightString}
-      />
+      <View style={styles.unit}>
+        <Text style={styles.labelSecondary}>English Units</Text>
+        <Switch
+          testID={getTestId('english-unit-switch')}
+          trackColor={{
+            false: Colors.Gray.grade50,
+            true: Colors.Green.grade10,
+          }}
+          thumbColor={
+            isEnglishUnit ? Colors.Green.grade50 : Colors.Gray.grade25
+          }
+          onValueChange={() => setIsEnglisUnit(!isEnglishUnit)}
+          value={isEnglishUnit}
+        />
+      </View>
+      {renderCalculatorInputs()}
       <View style={styles.calculateBtn}>{button}</View>
-      <BmiResult calculatedBmi={bmi} />
+      {isCalculated && (
+        <BmiResult
+          calculatedBmi={calcState.calculatedBmi.toFixed(
+            calcState.bmiPrecision,
+          )}
+        />
+      )}
     </View>
   );
 };
@@ -123,5 +284,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     margin: 5,
     textAlign: 'center',
+  },
+  labelSecondary: {
+    fontSize: Font.size.size5,
+    color: Colors.Black.grade100,
+    marginTop: 3,
+    paddingRight: 5,
+    alignContent: 'center',
+  },
+  unit: {
+    paddingLeft: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignSelf: 'center',
+    justifyContent: 'center',
   },
 });

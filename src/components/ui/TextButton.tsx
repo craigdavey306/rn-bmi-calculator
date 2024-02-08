@@ -1,7 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Platform } from 'react-native';
 
 import { Colors, Font } from '../../library';
+import { slugifyString } from '../../utils/slugify';
+import { getTestId } from '../../utils/helpers';
 
 type TextButtonProps = {
   buttonText: string;
@@ -12,12 +14,20 @@ const TextButton: React.FC<TextButtonProps> = ({
   buttonText,
   onPress,
 }): JSX.Element => {
+  const slugifiedLabel = slugifyString(`${buttonText}-btn`, ' ', '-');
+  const isAndroid = Platform.OS === 'android';
+
   return (
     <Pressable
+      testID={!isAndroid ? getTestId(slugifiedLabel) : ''}
       style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
       onPress={onPress}>
       <View>
-        <Text style={styles.buttonText}>{buttonText}</Text>
+        <Text
+          testID={isAndroid ? getTestId(slugifiedLabel) : ''}
+          style={styles.buttonText}>
+          {buttonText}
+        </Text>
       </View>
     </Pressable>
   );

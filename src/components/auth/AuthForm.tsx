@@ -13,22 +13,31 @@ import TextButton from '../ui/TextButton';
 import { login } from '../../utils/authenticate';
 import { authenticate } from '../../store/auth-store';
 
+interface LoginForm {
+  email: string | undefined;
+  password: string | undefined;
+}
+
 const AuthForm = (): JSX.Element => {
   const dispatch = useDispatch();
 
-  const [enteredEmail, setEnteredEmail] = useState('');
-  const [enteredPassword, setEnteredPassword] = useState('');
+  const initialFormState: LoginForm = {
+    email: undefined,
+    password: undefined,
+  };
+
+  const [loginForm, setLoginForm] = useState<LoginForm>(initialFormState);
 
   const handleEmailInput = (emailAddress: string) => {
-    setEnteredEmail(emailAddress);
+    setLoginForm({ ...loginForm, email: emailAddress });
   };
 
   const handlePasswordInput = (password: string) => {
-    setEnteredPassword(password);
+    setLoginForm({ ...loginForm, password });
   };
 
   const handleLoginSubmit = () => {
-    if (!login(enteredEmail, enteredPassword)) {
+    if (!login(loginForm.email, loginForm.password)) {
       Alert.alert(
         'Invalid input',
         'Please check the entered email and password.',
@@ -41,14 +50,14 @@ const AuthForm = (): JSX.Element => {
   return (
     <View>
       <EmailInput
-        emailInput={enteredEmail}
+        emailInput={loginForm.email ? loginForm.email : ''}
         handleEmailInput={handleEmailInput}
       />
       <Text style={styles.smallText}>
         {`(email = ${EMAIL}, password = ${PASSWORD})`}
       </Text>
       <PasswordInput
-        passwordInput={enteredPassword}
+        passwordInput={loginForm.password ? loginForm.password : ''}
         handlePasswordInput={handlePasswordInput}
       />
       <TextButton buttonText="Log In" onPress={handleLoginSubmit} />

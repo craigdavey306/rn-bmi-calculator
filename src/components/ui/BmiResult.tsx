@@ -13,6 +13,7 @@ const BmiResult: React.FC<BmiResultProps> = ({
     <View style={styles.container}>
       {calculatedBmi && (
         <Text
+          testID="bmi-result"
           style={
             styles.bmiLabel
           }>{`The calculated BMI is ${calculatedBmi}`}</Text>
