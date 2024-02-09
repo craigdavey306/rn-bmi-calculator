@@ -236,13 +236,19 @@ const BmiCalculator = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label} testID={getTestId('bmi-calculator-label')}>
+      <Text
+        style={styles.label}
+        testID={getTestId('bmi-calculator-label')}
+        accessible={true}
+        accessibilityLabel="BMI Calculator">
         BMI Calculator
       </Text>
       <View style={styles.unit}>
         <Text style={styles.labelSecondary}>English Units</Text>
         <Switch
           testID={getTestId('english-unit-switch')}
+          accessible={true}
+          accessibilityLabel="English Unit Switch"
           trackColor={{
             false: Colors.Gray.grade50,
             true: Colors.Green.grade10,

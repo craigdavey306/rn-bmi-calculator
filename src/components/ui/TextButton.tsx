@@ -23,11 +23,7 @@ const TextButton: React.FC<TextButtonProps> = ({
       style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
       onPress={onPress}>
       <View>
-        <Text
-          testID={isAndroid ? getTestId(slugifiedLabel) : ''}
-          style={styles.buttonText}>
-          {buttonText}
-        </Text>
+        <Text style={styles.buttonText}>{buttonText}</Text>
       </View>
     </Pressable>
   );

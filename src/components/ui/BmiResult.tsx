@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Platform } from 'react-native';
 import { Colors, Font } from '../../library';
 
 type BmiResultProps = {
@@ -9,11 +9,19 @@ type BmiResultProps = {
 const BmiResult: React.FC<BmiResultProps> = ({
   calculatedBmi,
 }): JSX.Element => {
+  const isAndroid = Platform.OS === 'android';
+
   return (
     <View style={styles.container}>
-      {calculatedBmi && (
+      {calculatedBmi && isAndroid ? (
         <Text
-          testID="bmi-result"
+          accessible={true}
+          accessibilityLabel="BMI Result"
+          style={
+            styles.bmiLabel
+          }>{`The calculated BMI is ${calculatedBmi}`}</Text>
+      ) : (
+        <Text
           style={
             styles.bmiLabel
           }>{`The calculated BMI is ${calculatedBmi}`}</Text>
